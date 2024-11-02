@@ -22,10 +22,8 @@ chessBoard = bitboard.Board()
 Board = chessBoard.getBoard()
 
 start = t.time()
-test = [chessBoard.getBishopMove(i) for i in range(64)]
+test = [chessBoard.getPawnMove(i, 'w') for i in range(64)]
 print("Total time: ", t.time() - start)
-
-
 
 class ChessBoard(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -104,6 +102,9 @@ class ChessBoard(tk.Tk):
                 self.is_grabbed = True  # Set grabbed state to True
                 self.piece_position = (row, column)
                 
+                self.drawMoves(column, row)
+                
+                
             elif self.is_grabbed:
                 #Places the piece down in current square
                 self.canvas.coords(self.current_piece, column*self.cell_width, row*self.cell_height)
@@ -123,8 +124,8 @@ class ChessBoard(tk.Tk):
     def drawMoves(self, column, row):
         position = (column + row*8)
         
-        moves = chessBoard.getBishopMove(position)
-        # moves = test[position]
+        # moves = chessBoard.getBishopMove(position)
+        moves = test[position]
         
         for i in range(8):
             for j in range(8):

@@ -282,6 +282,45 @@ class Board {
         return bitboardToArray(totalMoves);
     }
 
+    PyObject* getPawnMove(int position, char* colour){
+
+        Bitboard totalMoves = 0;
+        Bitboard curPos = 1ULL << (63-position);
+
+        if (colour[0] == 'w'){
+            
+            if (position > 7){
+                //moving forward 1 sqaure
+                totalMoves |= (curPos << 8 & ~allPieces);
+                //up left attack
+                totalMoves |= (curPos << 9 & ((position % 8 != 0) ? UINT64_MAX : 0)) & blackPieces;
+                //up right attack
+                totalMoves |= (curPos << 7 & ((position % 8 != 7)? UINT64_MAX : 0)) & blackPieces;
+            }
+            if (position < 56 && position > 47){
+                totalMoves |= (((curPos << 8 & ~allPieces) != 0) ? UINT64_MAX : 0) & (curPos << 16 & ~allPieces);
+            }
+
+        }
+        else if (colour[0] == 'b'){
+            
+            if (position < 56){
+                //moving forward 1 sqaure
+                totalMoves |= (curPos >> 8 & ~allPieces);
+                //up left attack
+                totalMoves |= (curPos >> 9 & ((position % 8 != 7) ? UINT64_MAX : 0)) & whitePieces;
+                //up right attack
+                totalMoves |= (curPos >> 7 & ((position % 8 != 0)? UINT64_MAX : 0)) & whitePieces;
+            }
+            if (position > 7 && position < 16){
+                totalMoves |= (((curPos >> 8 & ~allPieces) != 0) ? UINT64_MAX : 0) & (curPos >> 16 & ~allPieces);
+            }
+
+        }
+
+        return bitboardToArray(totalMoves);
+    }
+
     void generateKnightMoves(Bitboard knightMoves[64]){
         const uint64_t moves[8] = {15, 17, -15, -17,10, 6, -10, -6};
         uint64_t targetSquare;
@@ -523,6 +562,17 @@ extern "C" {
         return self->board->getBishopMove(position);
     }
 
+    static PyObject* PyBoard_getPawnMove(PyBoard* self, PyObject* args){
+        int position;
+        char* colour;
+
+        if (!PyArg_ParseTuple(args, "is", &position, &colour)){
+            return nullptr;
+        }
+
+        return self->board->getPawnMove(position, colour);
+    }
+
     //Method to return bitboard for given piece
     static PyObject* PyBoard_getBitboard(PyBoard* self, PyObject* args){
         char* piece;
@@ -547,6 +597,7 @@ extern "C" {
         {"getKingMove", (PyCFunction)PyBoard_getKingMove, METH_VARARGS, "Return array of king moves from position (0-63)"},
         {"getRookMove", (PyCFunction)PyBoard_getRookMove, METH_VARARGS, "Return array of rook moves from position (0-63)"},
         {"getBishopMove", (PyCFunction)PyBoard_getBishopMove, METH_VARARGS, "Return array of bishop moves from position (0-63)"},
+        {"getPawnMove", (PyCFunction)PyBoard_getPawnMove, METH_VARARGS, "Return array of pawn moves from position (0-63)"},
         {nullptr, nullptr, 0, nullptr}  // Sentinel
     };
 
