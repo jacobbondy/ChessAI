@@ -36,19 +36,31 @@ class ChessBoard(tk.Tk):
         self.cell_width = 60
         self.cell_height = 60
         
+        self.is_grabbed = False
+        self.current_piece = None
+        self.piece_position = None
+        
         self.canvas = tk.Canvas(self, width=self.columns*self.cell_width, height=self.rows*self.cell_height, borderwidth=0, highlightthickness=0)
         self.canvas.pack(side="top", fill="both", expand="true")
         
         self.board = {}
         self.original_colors = {}
-        self.white_piece_images = {
+        self.pieces = {}
+        self.piece_images = {
             'K': ImageTk.PhotoImage(Image.open("./Pieces/White/King.png")),
             'Q': ImageTk.PhotoImage(Image.open("./Pieces/White/Queen.png")),
             'R': ImageTk.PhotoImage(Image.open("./Pieces/White/Rook.png")),
             'B': ImageTk.PhotoImage(Image.open("./Pieces/White/Bishop.png")),
             'N': ImageTk.PhotoImage(Image.open("./Pieces/White/Knight.png")),
-            'P': ImageTk.PhotoImage(Image.open("./Pieces/White/Pawn.png"))
+            'P': ImageTk.PhotoImage(Image.open("./Pieces/White/Pawn.png")),
+            'k': ImageTk.PhotoImage(Image.open("./Pieces/Black/King.png")),
+            'q': ImageTk.PhotoImage(Image.open("./Pieces/Black/Queen.png")),
+            'r': ImageTk.PhotoImage(Image.open("./Pieces/Black/Rook.png")),
+            'b': ImageTk.PhotoImage(Image.open("./Pieces/Black/Bishop.png")),
+            'n': ImageTk.PhotoImage(Image.open("./Pieces/Black/Knight.png")),
+            'p': ImageTk.PhotoImage(Image.open("./Pieces/Black/Pawn.png"))
         }
+        
         
         for column in range(self.columns):
             for row in range(self.rows):
@@ -63,8 +75,15 @@ class ChessBoard(tk.Tk):
         self.canvas.bind("<Button-1>", self.on_square_click)
         self.canvas.bind("<Button-2>", self.clear)
         
-        self.canvas.create_image(30, 30, image=self.white_piece_images['K'])
+        for row in range (8):
+            for column in range(8):
+                for piece, bitboard in Board.items():
+                    if bitboard[row][column]:
+                        self.pieces[row, column] = \
+                            self.canvas.create_image(self.cell_width*column, self.cell_height*row, image=self.piece_images[piece], anchor = tk.NW, tag = piece)
+                        
 
+                        
     def on_square_click(self, event):
         # Get the coordinates of the click
         x, y = event.x, event.y
@@ -76,7 +95,30 @@ class ChessBoard(tk.Tk):
         print(f"Column: {column} Row: {row}, Position: {row*8 + column}")
         
         if (row, column) in self.board:
-            self.drawMoves(column, row)
+            
+            # Check if the piece is grabbed
+            if not self.is_grabbed and (row, column) in self.pieces:
+                # Store the image ID and position, as well as raise it to the front
+                self.current_piece = self.pieces[row,column]
+                self.canvas.tag_raise(self.current_piece)
+                self.is_grabbed = True  # Set grabbed state to True
+                self.piece_position = (row, column)
+                
+            elif self.is_grabbed:
+                #Places the piece down in current square
+                self.canvas.coords(self.current_piece, column*self.cell_width, row*self.cell_height)
+                
+                #Capturing
+                if (row, column) in self.pieces and (row, column) != self.piece_position:
+                    self.canvas.delete(self.pieces.pop((row,column)))
+                
+                #Moving piece in board dictionary
+                self.pieces[row,column] = self.pieces.pop(self.piece_position)
+                    
+                #Reset important variables
+                self.is_grabbed = False
+                self.current_piece = None
+                self.piece_position = None
 
     def drawMoves(self, column, row):
         position = (column + row*8)

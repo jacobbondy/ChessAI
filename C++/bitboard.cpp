@@ -35,39 +35,39 @@ class Board {
     Board(){
         // Initialize the board to the starting position
 
-        // whitePawns = 0x000000000000FF00;
-        // whiteRooks = 0x0000000000000081;
-        // whiteKnights = 0x0000000000000042;
-        // whiteBishops = 0x0000000000000024;
-        // whiteQueen = 0x0000000000000010;
-        // whiteKing = 0x0000000000000008;
-        // updateWhitePieces(&whitePieces);
+        whitePawns = 0x000000000000FF00;
+        whiteRooks = 0x0000000000000081;
+        whiteKnights = 0x0000000000000042;
+        whiteBishops = 0x0000000000000024;
+        whiteQueen = 0x0000000000000010;
+        whiteKing = 0x0000000000000008;
+        updateWhitePieces(&whitePieces);
 
-        // blackPawns = 0x00FF000000000000;
-        // blackRooks = 0x8100000000000000;
-        // blackKnights = 0x4200000000000000;
-        // blackBishops = 0x2400000000000000;
-        // blackQueen = 0x1000000000000000;
-        // blackKing = 0x0800000000000000;
-        // updateBlackPieces(&blackPieces);
+        blackPawns = 0x00FF000000000000;
+        blackRooks = 0x8100000000000000;
+        blackKnights = 0x4200000000000000;
+        blackBishops = 0x2400000000000000;
+        blackQueen = 0x1000000000000000;
+        blackKing = 0x0800000000000000;
+        updateBlackPieces(&blackPieces);
 
 
         //used to empty board for testing
-        whitePawns = 0;
-        whiteRooks = 0;
-        whiteKnights = 0;
-        whiteBishops = 0;
-        whiteQueen = 0;
-        whiteKing = 0;
-        updateWhitePieces(&whitePieces);
+        // whitePawns = 0;
+        // whiteRooks = 0;
+        // whiteKnights = 0;
+        // whiteBishops = 0;
+        // whiteQueen = 0;
+        // whiteKing = 0;
+        // updateWhitePieces(&whitePieces);
 
-        blackPawns = 0;
-        blackRooks = 0;
-        blackKnights = 0;
-        blackBishops = 0;
-        blackQueen = 0;
-        blackKing = 0;
-        updateBlackPieces(&blackPieces);
+        // blackPawns = 0;
+        // blackRooks = 0;
+        // blackKnights = 0;
+        // blackBishops = 0;
+        // blackQueen = 0;
+        // blackKing = 0;
+        // updateBlackPieces(&blackPieces);
 
 
         generateKnightMoves(knightMoves);
