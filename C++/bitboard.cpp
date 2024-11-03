@@ -408,11 +408,11 @@ class Board {
         else{
             if (pos & blackKnights) moves = getKnightMove(position);
             else if (pos & blackBishops) moves = getBishopMove(position);
-            else if (pos & whiteKing) moves = getKingMove(position);
-            else if (pos & whiteKnights) moves = getKnightMove(position);
-            else if (pos & whitePawns) moves = getPawnMove(position, colour);
-            else if (pos & whiteQueen) moves = getQueenMove(position);
-            else if (pos & whiteRooks) moves = getRookMove(position);
+            else if (pos & blackKing) moves = getKingMove(position);
+            else if (pos & blackKnights) moves = getKnightMove(position);
+            else if (pos & blackPawns) moves = getPawnMove(position, colour);
+            else if (pos & blackQueen) moves = getQueenMove(position);
+            else if (pos & blackRooks) moves = getRookMove(position);
 
             moves &= ~blackPieces;
         }
@@ -679,7 +679,6 @@ extern "C" {
 
     // Method definitions
     static PyMethodDef PyBoard_methods[] = {
-        // {"print", (PyCFunction)PyBoard_print, METH_NOARGS, "Print the chess board."},
         {"getBitboard", (PyCFunction)PyBoard_getBitboard, METH_VARARGS, "Return bitboard corresponding to piece."},
         {"getBoard", (PyCFunction)PyBoard_getBoard, METH_NOARGS, "Return array of bitboards representing board."},
         {"getMove", (PyCFunction)PyBoard_getMove, METH_VARARGS, "Return array of moves from position (0-63)"},

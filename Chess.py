@@ -17,6 +17,9 @@ from PIL import ImageTk, Image
 import bitboard
 import time as t
 
+cb = bitboard.Board()
+cb.clearSquare(0)
+
 
 class ChessBoard(tk.Tk):
     def __init__(self, *args, **kwargs):
@@ -128,7 +131,7 @@ class ChessBoard(tk.Tk):
         column = x // self.cell_width
         row = y // self.cell_height
         
-        if (row, column) in self.board:
+        if (row, column) in self.board and (row, column) in self.pieces:
             self.chessBoard.clearSquare(row*8 + column)
             self.canvas.delete(self.pieces.pop((row,column)))
 
