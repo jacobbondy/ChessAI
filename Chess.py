@@ -116,6 +116,7 @@ class ChessBoard(tk.Tk):
                 self.is_grabbed = False
                 self.current_piece = None
                 self.piece_position = None
+                self.clear(1)
 
     def drawMoves(self, column, row):
         position = (column + row*8)

@@ -88,7 +88,7 @@ class Board {
         return knightMoves[position];
     }
 
-    Bitoard getKingMove(int position){
+    Bitboard getKingMove(int position){
         return kingMoves[position];
     }
 
@@ -279,10 +279,10 @@ class Board {
         //check if piece is on the edge, otherwise add to move list
         if (!(tempPos == position)) totalMoves |= curPos;
 
-        return totalMoves
+        return totalMoves;
     }
 
-    Bitboard getPawnMove(int position, char* colour){
+    Bitboard getPawnMove(int position, char colour[2]){
 
         Bitboard totalMoves = 0;
         Bitboard curPos = 1ULL << (63-position);
@@ -319,6 +319,10 @@ class Board {
         }
 
         return totalMoves;
+    }
+
+    Bitboard getQueenMove(int position){
+        return getRookMove(position) | getBishopMove(position);
     }
 
     void generateKnightMoves(Bitboard knightMoves[64]){
@@ -382,7 +386,7 @@ class Board {
 
     PyObject* getMove(int position){
         Bitboard pos = 1ULL << (63-position);
-        char* colour[2] = " ";
+        char colour[2] = " ";
         if  (pos & allPieces){
             colour[0] = pos & whitePieces ? 'w' : 'b';
         }
@@ -391,12 +395,12 @@ class Board {
         }
 
         Bitboard moves;
-        if (colour[0] = 'w'){
+        if (colour[0] == 'w'){
             if (pos & whiteKnights) moves = getKnightMove(position);
             else if (pos & whiteBishops) moves = getBishopMove(position);
             else if (pos & whiteKing) moves = getKingMove(position);
             else if (pos & whiteKnights) moves = getKnightMove(position);
-            else if (pos & whitePawns) moves = getPawnMove(position, 'w');
+            else if (pos & whitePawns) moves = getPawnMove(position, colour);
             else if (pos & whiteQueen) moves = getQueenMove(position);
             else if (pos & whiteRooks) moves = getRookMove(position);
 
@@ -407,7 +411,7 @@ class Board {
             else if (pos & blackBishops) moves = getBishopMove(position);
             else if (pos & whiteKing) moves = getKingMove(position);
             else if (pos & whiteKnights) moves = getKnightMove(position);
-            else if (pos & whitePawns) moves = getPawnMove(position, 'w');
+            else if (pos & whitePawns) moves = getPawnMove(position, colour);
             else if (pos & whiteQueen) moves = getQueenMove(position);
             else if (pos & whiteRooks) moves = getRookMove(position);
 
@@ -560,7 +564,7 @@ extern "C" {
 
     static PyObject* PyBoard_getMove(PyBoard* self, PyObject* args){
         int position;
-        if (!PyArg_ParseTuple(args, "i", &position, &colour)){
+        if (!PyArg_ParseTuple(args, "i", &position)){
             return nullptr;
         }
 
