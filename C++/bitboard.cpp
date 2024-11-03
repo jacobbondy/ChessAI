@@ -51,7 +51,6 @@ class Board {
         blackKing = 0x0800000000000000;
         updateBlackPieces(&blackPieces);
 
-
         //used to empty board for testing
         // whitePawns = 0;
         // whiteRooks = 0;
@@ -420,6 +419,76 @@ class Board {
         return bitboardToArray(moves);
     }
 
+    void clearSquare(int position){
+        Bitboard toClear = ~(1ULL << (63-position));
+
+        whitePawns &= toClear;
+        whiteRooks &= toClear;
+        whiteKnights &= toClear;
+        whiteBishops &= toClear;
+        whiteQueen &= toClear;
+        whiteKing &= toClear;
+        updateWhitePieces(&whitePieces);
+
+        blackPawns &= toClear;
+        blackRooks &= toClear;
+        blackKnights &= toClear;
+        blackBishops &= toClear;
+        blackQueen &= toClear;
+        blackKing &= toClear;
+        updateBlackPieces(&blackPieces);
+
+        allPieces = whitePieces | blackPieces;
+    }
+
+    void move(int pos1, int pos2){
+        Bitboard position1 = 1ULL << (63-pos1);
+        Bitboard position2 = 1ULL << (63-pos2);
+
+        clearSquare(pos2);
+
+        if (position1 & whiteKnights){
+            whiteKnights |= position2;
+        }
+        else if (position1 & whiteBishops){
+            whiteBishops |= position2;
+        } 
+        else if (position1 & whiteKing){
+            whiteKing |= position2;
+        }
+        else if (position1 & whitePawns){
+            whitePawns |= position2;
+        } 
+        else if (position1 & whiteQueen){
+            whiteQueen |= position2;
+        }
+        else if (position1 & whiteRooks){
+            whiteRooks |= position2;
+        }
+        else if (position1 & blackKnights){
+            blackKnights |= position2;
+        }
+        else if (position1 & blackBishops){
+            blackBishops |= position2;
+        }
+        else if (position1 & blackKing){
+            blackKing |= position2;
+        }
+        else if (position1 & blackPawns){
+            blackPawns |= position2;
+        }
+        else if (position1 & blackQueen){
+            blackQueen |= position2;
+        }
+        else if (position1 & blackRooks){
+            blackRooks |= position2;
+        }
+        
+        updateWhitePieces(&whitePieces);
+        updateBlackPieces(&blackPieces);
+        clearSquare(pos1);
+    }
+
     PyObject* getBoard(){
         char pieces[6] = {'K','Q', 'R', 'B', 'N', 'P'};
         char piece[2];
@@ -571,6 +640,28 @@ extern "C" {
         return self->board->getMove(position);
     }
 
+    static PyObject* PyBoard_move(PyBoard* self, PyObject* args){
+        int pos1, pos2;
+        if (!PyArg_ParseTuple(args, "ii", &pos1, &pos2)){
+            PyErr_SetString(PyExc_TypeError, "Invalid arguments to move function.");
+            return nullptr;
+        }
+
+        self->board->move(pos1, pos2);
+        Py_RETURN_NONE;
+    }
+
+    static PyObject* PyBoard_clearSquare(PyBoard* self, PyObject* args){
+        int pos1;
+        if (!PyArg_ParseTuple(args, "i", &pos1)){
+            PyErr_SetString(PyExc_TypeError, "Invalid arguments to move function.");
+            return nullptr;
+        }
+
+        self->board->clearSquare(pos1);
+        Py_RETURN_NONE;
+    }
+
     //Method to return bitboard for given piece
     static PyObject* PyBoard_getBitboard(PyBoard* self, PyObject* args){
         char* piece;
@@ -592,6 +683,8 @@ extern "C" {
         {"getBitboard", (PyCFunction)PyBoard_getBitboard, METH_VARARGS, "Return bitboard corresponding to piece."},
         {"getBoard", (PyCFunction)PyBoard_getBoard, METH_NOARGS, "Return array of bitboards representing board."},
         {"getMove", (PyCFunction)PyBoard_getMove, METH_VARARGS, "Return array of moves from position (0-63)"},
+        {"move", (PyCFunction)PyBoard_move, METH_VARARGS, "Makes move on the board from pos1 (0-63) to pos2(0-63)"},
+        {"clearSquare", (PyCFunction)PyBoard_clearSquare, METH_VARARGS, "Clears a square on the board in position (0-63)"},
         {nullptr, nullptr, 0, nullptr}  // Sentinel
     };
 

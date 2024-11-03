@@ -15,15 +15,14 @@ pytorch version: 1.12.1 Build py3.10_cuda11.3_cudnn8_0
 import torch, tkinter as tk
 from PIL import ImageTk, Image
 import bitboard
-import time as t;
+import time as t
 
-chessBoard = bitboard.Board()
-
-Board = chessBoard.getBoard()
 
 class ChessBoard(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
+        
+        self.chessBoard = bitboard.Board()
         
         self.rows = 8
         self.columns = 8
@@ -67,12 +66,13 @@ class ChessBoard(tk.Tk):
                 self.original_colors[row, column] = color  # Store original color
 
         self.canvas.bind("<Button-1>", self.on_square_click)
-        self.canvas.bind("<Button-2>", self.clear)
+        self.canvas.bind("<Button-2>", self.updateBoard)
+        self.canvas.bind("<Button-3>", self.on_square_right_click)
         
         for row in range (8):
             for column in range(8):
-                for piece, bitboard in Board.items():
-                    if bitboard[row][column]:
+                for piece, bb in self.chessBoard.getBoard().items():
+                    if bb[row][column]:
                         self.pieces[row, column] = \
                             self.canvas.create_image(self.cell_width*column, self.cell_height*row, image=self.piece_images[piece], anchor = tk.NW, tag = piece)
                         
@@ -108,28 +108,61 @@ class ChessBoard(tk.Tk):
                 #Capturing
                 if (row, column) in self.pieces and (row, column) != self.piece_position:
                     self.canvas.delete(self.pieces.pop((row,column)))
+                    self.chessBoard.clearSquare(row*8 + column)
                 
                 #Moving piece in board dictionary
                 self.pieces[row,column] = self.pieces.pop(self.piece_position)
+                self.chessBoard.move(self.piece_position[0]*8 +self.piece_position[1], row*8 + column)
                     
                 #Reset important variables
                 self.is_grabbed = False
                 self.current_piece = None
                 self.piece_position = None
-                self.clear(1)
+                self.clear()
+    
+    def on_square_right_click(self, event):
+        # Get the coordinates of the click
+        x, y = event.x, event.y
+        
+        # Find the row and column based on the click
+        column = x // self.cell_width
+        row = y // self.cell_height
+        
+        if (row, column) in self.board:
+            self.chessBoard.clearSquare(row*8 + column)
+            self.canvas.delete(self.pieces.pop((row,column)))
 
     def drawMoves(self, column, row):
         position = (column + row*8)
         
-        moves = chessBoard.getMove(position)
+        moves = self.chessBoard.getMove(position)
         
         for i in range(8):
             for j in range(8):
                 if moves[i][j] == 1:
                     rect = self.board[i,j]
                     self.canvas.itemconfig(rect, fill="#ffcccc")
+    
+    def updateBoard(self, event):
+        Board = self.chessBoard.getBoard()
+        self.is_grabbed = False
+        self.current_piece = None
+        self.piece_position = None
+        self.clear()
+        
+        for piece in self.pieces.values():
+            self.canvas.delete(piece)
+        
+        self.pieces = {}
+        
+        for row in range (8):
+            for column in range(8):
+                for piece, bb in Board.items():
+                    if bb[row][column]:
+                        self.pieces[row, column] = \
+                            self.canvas.create_image(self.cell_width*column, self.cell_height*row, image=self.piece_images[piece], anchor = tk.NW, tag = piece)
                     
-    def clear(self, event):
+    def clear(self):
         for i in range(8):
             for j in range(8):
                 rect = self.board[i,j]
