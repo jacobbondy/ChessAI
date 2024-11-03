@@ -21,10 +21,6 @@ chessBoard = bitboard.Board()
 
 Board = chessBoard.getBoard()
 
-start = t.time()
-test = [chessBoard.getPawnMove(i, 'w') for i in range(64)]
-print("Total time: ", t.time() - start)
-
 class ChessBoard(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -124,8 +120,7 @@ class ChessBoard(tk.Tk):
     def drawMoves(self, column, row):
         position = (column + row*8)
         
-        # moves = chessBoard.getBishopMove(position)
-        moves = test[position]
+        moves = chessBoard.getMove(position)
         
         for i in range(8):
             for j in range(8):

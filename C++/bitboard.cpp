@@ -84,15 +84,15 @@ class Board {
         *board = blackPawns | blackRooks | blackKnights | blackBishops | blackQueen | blackKing;
     }
 
-    PyObject* getKnightMove(int position){
-        return bitboardToArray(knightMoves[position]);
+    Bitboard getKnightMove(int position){
+        return knightMoves[position];
     }
 
-    PyObject* getKingMove(int position){
-        return bitboardToArray(kingMoves[position]);
+    Bitoard getKingMove(int position){
+        return kingMoves[position];
     }
 
-    PyObject* getRookMove(int position){
+    Bitboard getRookMove(int position){
         Bitboard totalMoves = 0;
         Bitboard curPos = 1ULL << (63-position);
         int tempPos = position;
@@ -182,10 +182,10 @@ class Board {
             }
         }
 
-        return bitboardToArray(totalMoves);
+        return totalMoves;
     }
 
-    PyObject* getBishopMove(int position){
+    Bitboard getBishopMove(int position){
         Bitboard totalMoves = 0;
         Bitboard curPos = 1ULL << (63-position);
         int tempPos = position;
@@ -279,10 +279,10 @@ class Board {
         //check if piece is on the edge, otherwise add to move list
         if (!(tempPos == position)) totalMoves |= curPos;
 
-        return bitboardToArray(totalMoves);
+        return totalMoves
     }
 
-    PyObject* getPawnMove(int position, char* colour){
+    Bitboard getPawnMove(int position, char* colour){
 
         Bitboard totalMoves = 0;
         Bitboard curPos = 1ULL << (63-position);
@@ -318,7 +318,7 @@ class Board {
 
         }
 
-        return bitboardToArray(totalMoves);
+        return totalMoves;
     }
 
     void generateKnightMoves(Bitboard knightMoves[64]){
@@ -378,6 +378,42 @@ class Board {
             }
         }        
 
+    }
+
+    PyObject* getMove(int position){
+        Bitboard pos = 1ULL << (63-position);
+        char* colour[2] = " ";
+        if  (pos & allPieces){
+            colour[0] = pos & whitePieces ? 'w' : 'b';
+        }
+        else{
+            return nullptr;
+        }
+
+        Bitboard moves;
+        if (colour[0] = 'w'){
+            if (pos & whiteKnights) moves = getKnightMove(position);
+            else if (pos & whiteBishops) moves = getBishopMove(position);
+            else if (pos & whiteKing) moves = getKingMove(position);
+            else if (pos & whiteKnights) moves = getKnightMove(position);
+            else if (pos & whitePawns) moves = getPawnMove(position, 'w');
+            else if (pos & whiteQueen) moves = getQueenMove(position);
+            else if (pos & whiteRooks) moves = getRookMove(position);
+
+            moves &= ~whitePieces;
+        }
+        else{
+            if (pos & blackKnights) moves = getKnightMove(position);
+            else if (pos & blackBishops) moves = getBishopMove(position);
+            else if (pos & whiteKing) moves = getKingMove(position);
+            else if (pos & whiteKnights) moves = getKnightMove(position);
+            else if (pos & whitePawns) moves = getPawnMove(position, 'w');
+            else if (pos & whiteQueen) moves = getQueenMove(position);
+            else if (pos & whiteRooks) moves = getRookMove(position);
+
+            moves &= ~blackPieces;
+        }
+        return bitboardToArray(moves);
     }
 
     PyObject* getBoard(){
@@ -522,55 +558,13 @@ extern "C" {
         return (PyObject*)self;
     }
 
-    static PyObject* PyBoard_getKnightMove(PyBoard* self, PyObject* args){
+    static PyObject* PyBoard_getMove(PyBoard* self, PyObject* args){
         int position;
-
-        if (!PyArg_ParseTuple(args, "i", &position)){
+        if (!PyArg_ParseTuple(args, "i", &position, &colour)){
             return nullptr;
         }
 
-        return self->board->getKnightMove(position);
-    }
-
-    static PyObject* PyBoard_getKingMove(PyBoard* self, PyObject* args){
-        int position;
-
-        if (!PyArg_ParseTuple(args, "i", &position)){
-            return nullptr;
-        }
-
-        return self->board->getKingMove(position);
-    }
-
-    static PyObject* PyBoard_getRookMove(PyBoard* self, PyObject* args){
-        int position;
-
-        if (!PyArg_ParseTuple(args, "i", &position)){
-            return nullptr;
-        }
-
-        return self->board->getRookMove(position);
-    }
-
-    static PyObject* PyBoard_getBishopMove(PyBoard* self, PyObject* args){
-        int position;
-
-        if (!PyArg_ParseTuple(args, "i", &position)){
-            return nullptr;
-        }
-
-        return self->board->getBishopMove(position);
-    }
-
-    static PyObject* PyBoard_getPawnMove(PyBoard* self, PyObject* args){
-        int position;
-        char* colour;
-
-        if (!PyArg_ParseTuple(args, "is", &position, &colour)){
-            return nullptr;
-        }
-
-        return self->board->getPawnMove(position, colour);
+        return self->board->getMove(position);
     }
 
     //Method to return bitboard for given piece
@@ -593,11 +587,7 @@ extern "C" {
         // {"print", (PyCFunction)PyBoard_print, METH_NOARGS, "Print the chess board."},
         {"getBitboard", (PyCFunction)PyBoard_getBitboard, METH_VARARGS, "Return bitboard corresponding to piece."},
         {"getBoard", (PyCFunction)PyBoard_getBoard, METH_NOARGS, "Return array of bitboards representing board."},
-        {"getKnightMove", (PyCFunction)PyBoard_getKnightMove, METH_VARARGS, "Return array of knight moves from position (0-63)"},
-        {"getKingMove", (PyCFunction)PyBoard_getKingMove, METH_VARARGS, "Return array of king moves from position (0-63)"},
-        {"getRookMove", (PyCFunction)PyBoard_getRookMove, METH_VARARGS, "Return array of rook moves from position (0-63)"},
-        {"getBishopMove", (PyCFunction)PyBoard_getBishopMove, METH_VARARGS, "Return array of bishop moves from position (0-63)"},
-        {"getPawnMove", (PyCFunction)PyBoard_getPawnMove, METH_VARARGS, "Return array of pawn moves from position (0-63)"},
+        {"getMove", (PyCFunction)PyBoard_getMove, METH_VARARGS, "Return array of moves from position (0-63)"},
         {nullptr, nullptr, 0, nullptr}  // Sentinel
     };
 
